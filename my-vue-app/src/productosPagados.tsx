@@ -1,36 +1,34 @@
-import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useState, useEffect } from 'react';
+import socketio from 'socket.io-client';
 
-type MessageType = {
+const socket = socketio('http://localhost:4000');
+
+interface Message {
     title: string;
     name: string;
-    price: string;
-};
-
-const socket: Socket = io('http://52.72.28.83:5000');
+    price: number;
+}
 
 function App() {
-    const [messages, setMessages] = useState<MessageType[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
-        socket.on('mesagess', (message: MessageType) => {
-            setMessages((prevMessages) => [...prevMessages, message]);
+        socket.on('newMessage', (data: Message) => {
+            console.log('Received data:', data);
+
+            setMessages(prev => [...prev, data]); 
         });
-        return () => {
-            socket.disconnect();
-        };
     }, []);
 
     return (
         <div>
-            <h1>Socket.IO Client</h1>
-            <ul>
-                {messages.map((message, index) => (
-                    <li key={index}>
-                        <strong>Titulo:</strong> {message.title}, <strong>Nombre:</strong> {message.name}, <strong>Precio:</strong> {message.price}
-                    </li>
-                ))}
-            </ul>
+            {messages.map((message: Message, index: number) => (
+                <div key={index}>
+                    <strong>Title:</strong> {message.title}
+                    <strong>Name:</strong> {message.name}
+                    <strong>Price:</strong> {message.price}
+                </div>  
+            ))}
         </div>
     );
 }
